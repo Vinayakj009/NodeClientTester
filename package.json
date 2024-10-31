@@ -2,8 +2,16 @@
   "name": "apicallvarients",
   "version": "1.0.0",
   "scripts": {
-    "server": "nodemon src/tester/server.ts",
-    "client": "nodemon src/tester/client.ts"
+    "dev:js:server": "nodemon src/tester/server.ts",
+    "dev:js:client": "nodemon src/tester/client.ts",
+    "dev:bun:server": "bun run src/tester/server.ts",
+    "dev:bun:client": "bun run src/tester/client.ts",
+    "build:js": "tsc",
+    "build:bun": "bun build src/tester/server.ts --compile --outfile build/server && bun build src/tester/client.ts --compile --outfile build/client",
+    "run:js:server": "node build/server.js",
+    "run:js:client": "node build/client.js",
+    "run:bun:server": "./build/server",
+    "run:bun:client": "./build/client"
   },
   "author": "",
   "license": "ISC",
