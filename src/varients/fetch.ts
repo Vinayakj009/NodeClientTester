@@ -1,6 +1,6 @@
 import http from 'http';
-import { testBody } from '../types';
-import axios from 'axios';
+import { serverProcessable } from '../types';
+import axios, { AxiosResponse } from 'axios';
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -24,7 +24,7 @@ class HttpApiCall {
                         res.end('No data');
                         return;
                     }
-                    const request = JSON.parse(bodyString) as testBody;
+                    const request = JSON.parse(bodyString) as serverProcessable;
                     request.processedByServer = true;
                     res.end(JSON.stringify(request));
                 });
@@ -34,15 +34,15 @@ class HttpApiCall {
         });
     }
 
-    async sendRequest(request: testBody) {
+    async sendRequest<V extends serverProcessable>(request: V) {
         const url = `http://${hostname}:${port}/`;
-        const axiosResponse = await axios.post(url, request);
-        const response = axiosResponse.data as testBody;
+        const axiosResponse: AxiosResponse<V, V> = await axios.post(url, request);
+        const response = axiosResponse.data;
         return response;
     }
 }
 
-const getAPICallFunction = (): (request: testBody) => Promise<testBody> => {
+function getAPICallFunction<V extends serverProcessable>(): (request: V) => Promise<V> {
     const apiCaller = new HttpApiCall();
     return apiCaller.sendRequest.bind(apiCaller);
 }

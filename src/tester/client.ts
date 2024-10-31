@@ -99,11 +99,9 @@ async function runCallsPerSecond(calls: number, endTime: number) {
         promises.push(new Promise((resolve) => setTimeout(resolve, rampEndTime - Date.now())));
         await Promise.all(promises);
     }
-    const testEndDelay = Date.now() - endTime;
     const expectedCallCount = calls * (endTime - startTime) / 1000;
     return {
         callsMade,
-        testEndDelay,
         expectedCallCount
     }
 }
@@ -113,13 +111,18 @@ async function main() {
     for(let calls = RAMP_UP_CALLS; calls <= MAX_CALLS_PER_SECOND; calls += RAMP_UP_CALLS) {
         console.log(`Ramping up to ${calls} cps with ${RAMP_UP_TIME}ms ramp up time and serial calls: ${RUN_SERIAL} max ramp calls: ${MAX_CALLS_PER_SECOND}`);
         await resetStats();
-        const endTime = Date.now() + RAMP_UP_TIME;
-        const data = await runCallsPerSecond(calls, endTime);
-        const averageResponseTime = stats.timeAggregate / stats.success;
-        if (data.callsMade < data.expectedCallCount || data.testEndDelay > 100 || averageResponseTime > 100) {
+        const startTime = Date.now();
+        const targetEndTime = startTime + RAMP_UP_TIME;
+        const data = await runCallsPerSecond(calls, targetEndTime);
+        const actualEndTime = Date.now();
+        const runTime = actualEndTime - startTime;
+        const testEndDelay = actualEndTime - targetEndTime;
+        const averageResponseTime = runTime / data.callsMade;
+        if (data.callsMade < data.expectedCallCount || testEndDelay > 100 || averageResponseTime > 100) {
+            const systemCapacity = 1000 / averageResponseTime;
             console.log(`Req Exceeded: ${calls} cps`);
-            console.log(`Ended delay : ${data.testEndDelay}ms`);
-            console.log(`System capacity: ${data.callsMade * 1000 / (RAMP_UP_TIME + data.testEndDelay) } cps`);
+            console.log(`Ended delay : ${testEndDelay}ms`);
+            console.log(`System capacity: ${systemCapacity} cps`);
             console.log(`Expected calls: ${data.expectedCallCount}`);
             console.log(`Overall Average response time: ${averageResponseTime}ms`);
             console.log(`Actual: ${ data.callsMade }`);
