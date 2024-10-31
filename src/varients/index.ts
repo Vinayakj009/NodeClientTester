@@ -8,11 +8,11 @@ interface varient<V extends serverProcessable> {
 };
 
 const varientsPath = path.join(__dirname, './');
-const varientsFiles = fs.readdirSync(varientsPath).filter(file => file.endsWith('.ts') && file !== 'index.ts');
+const varientsFiles = fs.readdirSync(varientsPath).filter(file => (file.endsWith('.ts') || file.endsWith('.js')) && !file.startsWith('index.'));
 const varients: { [key: string]: varient<serverProcessable> } = {
 }
 varientsFiles.forEach(file => {
-    const varientName = path.basename(file, '.ts');
+    const varientName = path.basename(file, path.extname(file));
     varients[varientName] = require(path.join(varientsPath, file)).default;
 });
 

@@ -49,13 +49,13 @@ Replace "fetch" with the variant name you want to use.
 To run the server using the default fetch variant in dev mode:
 
 ```bash
-npm run dev:js:server fetch
+npm run js:dev:server fetch
 ```
 
 To run the client:
 
 ```bash
-npm run dev:js:client fetch
+npm run js:dev:client fetch
 ```
 
 ### Using bun
@@ -63,13 +63,13 @@ npm run dev:js:client fetch
 To run the server:
 
 ```bash
-npm run dev:bun:server fetch
+npm run bun:dev:server fetch
 ```
 
 To run the client:
 
 ```bash
-npm run dev:bun:client fetch
+npm run bun:dev:client fetch
 ```
 
 ## Compiling and Running the Compiled Code
@@ -85,13 +85,13 @@ npm run build:js
 To run the compiled server code:
 
 ```bash
-npm run run:js:server fetch
+npm run js:server fetch
 ```
 
 To run the compiled client code:
 
 ```bash
-npm run run:js:client fetch
+npm run js:client fetch
 ```
 
 ### Using bun
@@ -105,13 +105,13 @@ npm run build:bun
 To run the compiled server code:
 
 ```bash
-npm run run:bun:server fetch
+npm run bun:server fetch
 ```
 
 To run the compiled client code:
 
 ```bash
-npm run run:bun:client fetch
+npm run bun:client fetch
 ```
 
 ## Test parameters
