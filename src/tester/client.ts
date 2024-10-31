@@ -3,12 +3,10 @@ import { serverProcessable, testBody as testBody } from "../types";
 import { Mutex } from 'async-mutex';
 import crypto from 'crypto';
 
-
-const serializeCalls = process.argv[3] === 'serial';
-
 const MAX_CALLS_PER_SECOND = +(process.env.MAX_CALLS_PER_SECOND || 500);
 const RAMP_UP_TIME = +(process.env.RAMP_UP_TIME || 5000);
 const RAMP_UP_CALLS = +(process.env.RAMP_UP_CALLS || 50);
+const RUN_SERIAL = process.env.RUN_SERIAL !== undefined;
 
 type processable<V extends serverProcessable> = (sr: V) => Promise<V>;
 let apiCall: processable<testBody>;
@@ -91,7 +89,7 @@ async function runCallsPerSecond(calls: number, endTime: number) {
         const promises: Promise<void>[] = [];
         callsMade+=calls / scale;
         for (let i = 0; i < calls / scale; i++) {
-            if (serializeCalls) {
+            if (RUN_SERIAL) {
                 promises.push(requestMutex.runExclusive(makeCall)); // Runs in serial
             } else {
                 promises.push(makeCall()); // Run in parallel
@@ -113,7 +111,7 @@ async function runCallsPerSecond(calls: number, endTime: number) {
 
 async function main() {
     for(let calls = RAMP_UP_CALLS; calls <= MAX_CALLS_PER_SECOND; calls += RAMP_UP_CALLS) {
-        console.log(`Ramping up to ${calls} cps`);
+        console.log(`Ramping up to ${calls} cps with ${RAMP_UP_TIME}ms ramp up time and serial calls: ${RUN_SERIAL} max ramp calls: ${MAX_CALLS_PER_SECOND}`);
         await resetStats();
         const endTime = Date.now() + RAMP_UP_TIME;
         const data = await runCallsPerSecond(calls, endTime);
