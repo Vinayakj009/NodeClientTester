@@ -121,6 +121,7 @@ async function main() {
             console.log(`Ended delay : ${data.testEndDelay}ms`);
             console.log(`System capacity: ${data.callsMade * 1000 / (RAMP_UP_TIME + data.testEndDelay) } cps`);
             console.log(`Expected calls: ${data.expectedCallCount}`);
+            console.log(`Overall Average response time: ${averageResponseTime}ms`);
             console.log(`Actual: ${ data.callsMade }`);
             await printStats();
             break;

@@ -8,8 +8,8 @@
     "dev:bun:client": "bun run src/tester/client.ts",
     "build:js": "tsc",
     "build:bun": "bun build src/tester/server.ts --compile --outfile build/server && bun build src/tester/client.ts --compile --outfile build/client",
-    "run:js:server": "node build/server.js",
-    "run:js:client": "node build/client.js",
+    "run:js:server": "node build/tester/server.js",
+    "run:js:client": "node build/tester/client.js",
     "run:bun:server": "./build/server",
     "run:bun:client": "./build/client"
   },
