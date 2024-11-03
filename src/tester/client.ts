@@ -3,9 +3,10 @@ import { serverProcessable, testBody as testBody } from "../types";
 import { Mutex } from 'async-mutex';
 import crypto from 'crypto';
 
-const MAX_CALLS_PER_SECOND = +(process.env.MAX_CALLS_PER_SECOND || 500);
-const RAMP_UP_TIME = +(process.env.RAMP_UP_TIME || 5000);
-const RAMP_UP_CALLS = +(process.env.RAMP_UP_CALLS || 50);
+const MAX_CALLS_PER_SECOND = +(process.env.MAX_CALLS_PER_SECOND || 20000);
+const RAMP_UP_TIME = +(process.env.RAMP_UP_TIME || 1000);
+const RAMP_START_CALLS = +(process.env.RAMP_START_CALLS || 5000);
+const RAMP_UP_CALLS = +(process.env.RAMP_UP_CALLS || 5000);
 const RUN_SERIAL = process.env.RUN_SERIAL !== undefined;
 
 type processable<V extends serverProcessable> = (sr: V) => Promise<V>;
@@ -28,9 +29,8 @@ const processMessage = (response:testBody, requestId: string) => {
     return mutex.runExclusive(async () => {
         if (!response.processedByServer || response.requestId !== requestId) {
             console.log(`Failed request: ${JSON.stringify(response)} expected ${requestId}`);
-            process.exit(1);
             stats.failures++;
-            return;
+            throw new Error('Failed request');
         }
         const difference = response.receivedAt - response.sentAt;
         // console.log(`The request was sent at ${}`)
@@ -108,27 +108,63 @@ async function runCallsPerSecond(calls: number, endTime: number) {
 
 
 async function main() {
-    for(let calls = RAMP_UP_CALLS; calls <= MAX_CALLS_PER_SECOND; calls += RAMP_UP_CALLS) {
-        console.log(`Ramping up to ${calls} cps with ${RAMP_UP_TIME}ms ramp up time and serial calls: ${RUN_SERIAL} max ramp calls: ${MAX_CALLS_PER_SECOND}`);
-        await resetStats();
-        const startTime = Date.now();
-        const targetEndTime = startTime + RAMP_UP_TIME;
-        const data = await runCallsPerSecond(calls, targetEndTime);
-        const actualEndTime = Date.now();
-        const runTime = actualEndTime - startTime;
-        const testEndDelay = actualEndTime - targetEndTime;
-        const averageResponseTime = runTime / data.callsMade;
-        if (data.callsMade < data.expectedCallCount || testEndDelay > 100 || averageResponseTime > 100) {
-            const systemCapacity = 1000 / averageResponseTime;
-            console.log(`Req Exceeded: ${calls} cps`);
-            console.log(`Ended delay : ${testEndDelay}ms`);
-            console.log(`System capacity: ${systemCapacity} cps`);
-            console.log(`Expected calls: ${data.expectedCallCount}`);
-            console.log(`Overall Average response time: ${averageResponseTime}ms`);
-            console.log(`Actual: ${ data.callsMade }`);
-            await printStats();
-            break;
+    const localStats = {
+        maxRPS: 0,
+        endDelay: 0,
+        systemCapacity: 0,
+        expectedCalls: 0,
+        callsMade: 0,
+        overallAverageResponseTime: 0,
+        runTime: 0,
+    }
+    try {
+        for (let calls = RAMP_START_CALLS; calls <= MAX_CALLS_PER_SECOND; calls += RAMP_UP_CALLS) {
+            console.log(`Ramping up to ${calls} cps with ${RAMP_UP_TIME}ms ramp up time and serial calls: ${RUN_SERIAL} max ramp calls: ${MAX_CALLS_PER_SECOND}`);
+            await resetStats();
+            try {
+                const startTime = Date.now();
+                const targetEndTime = startTime + RAMP_UP_TIME;
+                const data = await runCallsPerSecond(calls, targetEndTime);
+                const actualEndTime = Date.now();
+                const runTime = actualEndTime - startTime;
+                const testEndDelay = actualEndTime - targetEndTime;
+                const averageResponseTime = runTime / data.callsMade;
+                const systemCapacity = 1000 / averageResponseTime;
+                localStats.maxRPS = calls;
+                localStats.endDelay = testEndDelay;
+                localStats.systemCapacity = systemCapacity;
+                localStats.expectedCalls = data.expectedCallCount;
+                localStats.callsMade = data.callsMade;
+                localStats.overallAverageResponseTime = averageResponseTime;
+                localStats.runTime = runTime;
+
+                if (data.callsMade < data.expectedCallCount) {
+                    console.log(`Breaking due to insufficient calls made. Actual: ${data.callsMade}, Expected: ${data.expectedCallCount}`);
+                    break;
+                }
+                if (testEndDelay > 100) {
+                    console.log(`Breaking due to test end delay. Actual: ${testEndDelay}ms, Limit: 100ms`);
+                    break;
+                }
+                if (stats.failures > 0) {
+                    console.log(`Breaking due to failures. Failures: ${stats.failures}`);
+                    break;
+                }
+
+            } catch (e) {
+                console.log('Error in main loop');
+                console.error(e);
+                break;
+            }
         }
+    } finally {
+        console.log(`Req Exceeded: ${localStats.maxRPS} cps`);
+        console.log(`Ended delay : ${localStats.endDelay}ms`);
+        console.log(`Expected calls: ${localStats.expectedCalls}`);
+        console.log(`Actual: ${localStats.callsMade} calls`);
+        console.log(`Overall Average response time: ${localStats.overallAverageResponseTime}ms`);
+        console.log(`System capacity: ${localStats.systemCapacity} cps`);
+        await printStats();
     }
     process.exit(0);
 }

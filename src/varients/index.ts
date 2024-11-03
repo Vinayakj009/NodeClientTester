@@ -4,7 +4,7 @@ import * as path from 'path';
 import { serverProcessable } from '../types';
 interface varient<V extends serverProcessable> {
     getAPICallFunction<R extends V>(): (request: R) => Promise<R>;
-    buildServer(): void;
+    buildServer(serverCallback: (request: V)=>Promise<V>): void;
 };
 
 const varientsPath = path.join(__dirname, './');

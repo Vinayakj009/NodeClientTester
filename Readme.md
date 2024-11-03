@@ -119,7 +119,8 @@ You can change the following 4 of the test parameters by setting them as env var
 
 1. MAX_CALLS_PER_SECOND : Integer value of maximunm numnber of calls you want to test per second.
 2. RAMP_UP_TIME : The amount of time in ms that you want each ramp of calls to run for.
-3. RAMP_UP_CALLS: The number by which the ramp should be incremented.
+3. RAMP_START_CALLS: The number at which the ramp should start. This allows to skip entries you are already sure of.
+4. RAMP_UP_CALLS: The number by which the ramp should be incremented.
 4. RUN_SERIAL: Whether to run the calls in parallel or serial.
 
 ## License

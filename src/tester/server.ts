@@ -7,4 +7,8 @@ if (!allowedInputs.includes(input)) {
     console.log(`Invalid input. Allowed inputs are: ${allowedInputs.join(', ')}`);
     process.exit(1);
 }
-varients[input].buildServer();
+varients[input].buildServer(async (request: any) => {
+    // console.log(`Server received request ${request?.requestId}`);
+    // await new Promise(resolve => setTimeout(resolve, 1));
+    return request;
+ });
