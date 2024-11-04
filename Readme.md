@@ -41,21 +41,21 @@ npm run server myVariant
 ```
 
 ## Running the Server and Client Code
-Here we assume you are using the default fetch variant.
+Here we assume you are using the default http variant.
 Replace "fetch" with the variant name you want to use.
 
 ### Using npm
 
-To run the server using the default fetch variant in dev mode:
+To run the server using the default http variant in dev mode:
 
 ```bash
-npm run js:dev:server fetch
+npm run js:dev:server http
 ```
 
 To run the client:
 
 ```bash
-npm run js:dev:client fetch
+npm run js:dev:client http
 ```
 
 ### Using bun
@@ -63,13 +63,13 @@ npm run js:dev:client fetch
 To run the server:
 
 ```bash
-npm run bun:dev:server fetch
+npm run bun:dev:server http
 ```
 
 To run the client:
 
 ```bash
-npm run bun:dev:client fetch
+npm run bun:dev:client http
 ```
 
 ## Compiling and Running the Compiled Code
@@ -85,13 +85,13 @@ npm run build:js
 To run the compiled server code:
 
 ```bash
-npm run js:server fetch
+npm run js:server http
 ```
 
 To run the compiled client code:
 
 ```bash
-npm run js:client fetch
+npm run js:client http
 ```
 
 ### Using bun
@@ -105,13 +105,13 @@ npm run build:bun
 To run the compiled server code:
 
 ```bash
-npm run bun:server fetch
+npm run bun:server http
 ```
 
 To run the compiled client code:
 
 ```bash
-npm run bun:client fetch
+npm run bun:client http
 ```
 
 ## Test parameters
@@ -121,7 +121,8 @@ You can change the following 4 of the test parameters by setting them as env var
 2. RAMP_UP_TIME : The amount of time in ms that you want each ramp of calls to run for.
 3. RAMP_START_CALLS: The number at which the ramp should start. This allows to skip entries you are already sure of.
 4. RAMP_UP_CALLS: The number by which the ramp should be incremented.
-4. RUN_SERIAL: Whether to run the calls in parallel or serial.
+5. RUN_SERIAL: Whether to run the calls in parallel or serial.
+6. API_RESPONSE_DELAY: This is server side only config, and adds a delay in ms to the response of each API call.
 
 ## License
 
