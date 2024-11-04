@@ -1,6 +1,5 @@
 import http from 'http';
 import { serverProcessable } from '../types';
-import axios, { AxiosResponse } from 'axios';
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -13,7 +12,7 @@ class HttpApiCall {
         this.agent = new http.Agent({
             keepAlive: true,
             keepAliveMsecs: 1000,
-            maxSockets: 20,
+            maxSockets: 50,
             maxFreeSockets: 75,
         });
     }
@@ -46,14 +45,30 @@ class HttpApiCall {
 
     async sendRequest<V extends serverProcessable>(request: V) {
         const url = `http://${hostname}:${port}/`;
-        const axiosResponse: AxiosResponse<V, V> = await axios({
-            method: 'POST',
-            url,
-            data: request,
-            httpAgent: this.agent,
+        return new Promise<V>((resolve, reject) => {
+            const req = http.request(url, {
+                method: 'POST',
+                agent: this.agent,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }, (res) => {
+                let data = '';
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+                res.on('end', () => {
+                    resolve(JSON.parse(data) as V);
+                });
+            });
+
+            req.on('error', (e) => {
+                reject(e);
+            });
+
+            req.write(JSON.stringify(request));
+            req.end();
         });
-        const response = axiosResponse.data;
-        return response;
     }
 }
 
