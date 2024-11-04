@@ -9,8 +9,9 @@ The inspiration comes from the fact that we faced DNS resolution issues in prod,
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- npm (v6 or higher) or bun (v0.1 or higher)
+- Node.js ( Tested on version 22.05.1)
+- npm (Tested on version 10.8.2) or bun (tested on version 1.0.21)
+
 
 ## Installation
 
