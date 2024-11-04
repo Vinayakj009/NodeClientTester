@@ -4,15 +4,17 @@ import { serverProcessable } from '../types';
 const hostname = '127.0.0.1';
 const port = 3000;
 
-class HttpApiCall {
-    private agent?: http.Agent;
+export class HttpApiCall {
+    protected agent?: http.Agent;
+    protected static hostname = '127.0.0.1';
+    protected static port = 3000;
     constructor() {
     }
     async startClient() {
         this.agent = new http.Agent({
             keepAlive: true,
             keepAliveMsecs: 1000,
-            maxSockets: 50,
+            maxSockets: 10,
             maxFreeSockets: 75,
         });
     }
