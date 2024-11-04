@@ -3,10 +3,10 @@ import { serverProcessable, testBody as testBody } from "../types";
 import { Mutex } from 'async-mutex';
 import crypto from 'crypto';
 
-const MAX_CALLS_PER_SECOND = +(process.env.MAX_CALLS_PER_SECOND || 20000);
+const MAX_CALLS_PER_SECOND = +(process.env.MAX_CALLS_PER_SECOND || 1000);
 const RAMP_UP_TIME = +(process.env.RAMP_UP_TIME || 1000);
-const RAMP_START_CALLS = +(process.env.RAMP_START_CALLS || 5000);
-const RAMP_UP_CALLS = +(process.env.RAMP_UP_CALLS || 5000);
+const RAMP_START_CALLS = +(process.env.RAMP_START_CALLS || 1000);
+const RAMP_UP_CALLS = +(process.env.RAMP_UP_CALLS || 50);
 const RUN_SERIAL = process.env.RUN_SERIAL !== undefined;
 
 type processable<V extends serverProcessable> = (sr: V) => Promise<V>;
@@ -49,7 +49,7 @@ const printStats = () => {
         if (stats.success == 0) {
             return;
         }
-        console.log(`Average time: ${stats.timeAggregate / stats.success}ms`);
+        console.log(`Quality Average time: ${stats.timeAggregate / stats.success}ms`);
         console.log(`Max time: ${stats.timeMax}ms`);
         console.log(`Min time: ${stats.timeMin}ms`);
         console.log(`Standard deviation: ${Math.sqrt(stats.timeSquared / stats.success)}ms`);
@@ -162,7 +162,7 @@ async function main() {
         console.log(`Ended delay : ${localStats.endDelay}ms`);
         console.log(`Expected calls: ${localStats.expectedCalls}`);
         console.log(`Actual: ${localStats.callsMade} calls`);
-        console.log(`Overall Average response time: ${localStats.overallAverageResponseTime}ms`);
+        console.log(`System Average response time: ${localStats.overallAverageResponseTime}ms`);
         console.log(`System capacity: ${localStats.systemCapacity} cps`);
         await printStats();
     }
